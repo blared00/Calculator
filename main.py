@@ -2,7 +2,21 @@ from datetime import datetime, timedelta
 
 
 class Calculator:
-    """Базовый калькулятор."""
+    """Класс Calculator является классом для других калькуляторов
+
+    Attributes
+    ----------
+    limit : int
+        лимит расчетной величины на день.
+
+    Methods
+    -------
+    add_record(record)
+        Сохраняет новую запись изменения расчетной величины.
+    get_today_stats(date_counting=datetime.now().date())
+        Возвращает количество расчетной величины за день
+    get_week_stats(date_counting=datetime.now().date())
+        Возвращает количество расчетной величины за неделю"""
 
     def __init__(self, limit):
         if isinstance(limit, int):
@@ -12,28 +26,56 @@ class Calculator:
         self.records = []
 
     def add_record(self, record):
-        """Сохраняет новую запись о расходах."""
+        """Сохраняет новую запись о изменении величины в калькулятор.
+
+        Parameters
+        ----------
+        record : Record
+        """
         if isinstance(record, Record):
             self.records.append(record)
         else:
             raise ValueError('Для внесения записи воспользуйтесь объектом Record')
 
     def get_today_stats(self, date_counting=datetime.now().date()):
-        """Подсчет за день."""
+        """Возвращает количество расчетной величины за день.
+        Если параметр date_counting не задан, то возвращает количество
+        расчетной величины за сегодня.
+
+        Parameters
+        ----------
+        date_counting : datetime.date(), optional
+        """
         result = []
         for record_today in self.records:
             if record_today.date.day == date_counting.day and record_today.date.month == date_counting.month and record_today.date.year == date_counting.year:
                 result.append(record_today.amount)
         return sum(result)
 
-    def get_week_stats(self):
-        """Подсчет за неделю."""
-        week_counting = [self.get_today_stats(datetime.now().date() - timedelta(days=i)) for i in range(0, 7)]
+    def get_week_stats(self, date_counting=datetime.now().date()):
+        """Возвращает количество расчетной величины за неделю.
+        Если параметр date_counting не задан, то возвращает количество
+        расчетной величины за сегодня и 7 дней до.
+
+        Parameters
+        ----------
+        date_counting : datetime.date(), optional
+        """
+        week_counting = [self.get_today_stats(date_counting - timedelta(days=i)) for i in range(0, 7)]
         return sum(week_counting)
 
 
 class CaloriesCalculator(Calculator):
-    """Калькулятор калорий"""
+    """Калькулятор калорий
+    Класс CaloriesCalculator используется для расчета потребленных калорий
+    Является наследником от класса Calculator.
+
+    Methods
+    -------
+    get_calories_remained()
+        Определяет, сколько ещё калорий можно/нужно получить сегодня.
+    """
+
 
     def get_calories_remained(self):
         """Определяет, сколько ещё калорий можно/нужно получить сегодня"""
@@ -44,19 +86,37 @@ class CaloriesCalculator(Calculator):
 
 
 class CashCalculator(Calculator):
-    """Калькулятор подсчета денег"""
+    """Калькулятор подсчета затрат
+    Класс CashCalculator используется учета денежных затрат.
+    Является наследником от класса Calculator.
+
+    Methods
+    -------
+    get_today_cash_remained(currency)
+    Определяет, сколько ещё денег можно потратить сегодня.
+    """
     USD_RATE = 73.32
     EURO_RATE = 86.50
-    CURRENCY_LIST = {'руб': 'руб',
-                     'rub': 'руб',
-                     'usd': 'USD',
-                     'euro': 'Euro'}
-
+    CURRENCY_LIST = {
+        'руб': 'руб',
+        'rub': 'руб',
+        'usd': 'USD',
+        'euro': 'Euro'
+    }
+    CONVERTER = {
+        'руб': 1,
+        'USD': USD_RATE,
+        'Euro': EURO_RATE
+    }
     def get_today_cash_remained(self, currency):
-        """Определяет, сколько ещё денег можно потратить сегодня в рублях, долларах или евро."""
-        if currency in self.CURRENCY_LIST.keys():
+        """Определяет, сколько ещё денег можно потратить сегодня в рублях, долларах или евро.
+        Parameters
+        ----------
+        currency : str
+        """
+        if currency.lower() in self.CURRENCY_LIST.keys():
             currency = self.CURRENCY_LIST[currency.lower()]
-            remains = self.limit - self.get_today_stats()
+            remains = round((self.limit - self.get_today_stats())/self.CONVERTER[currency], 2)
             if self.get_today_stats() < self.limit:
                 return f'На сегодня осталось {remains} {currency}'
             elif self.get_today_stats() > self.limit:
@@ -66,7 +126,17 @@ class CashCalculator(Calculator):
 
 
 class Record:
-    """Создание записи о потреблении """
+    """Создание записи об изменении расчетной величины.
+
+    Attributes
+    ----------
+    amount : int
+        количество расчетной величины
+    comment : str
+        описание/причина изменения
+    date : datetime.date(), optional
+        дата изменения. Если параметр date не задан, то производит запись на сегодня.
+    """
     def __init__(self, amount, comment, date=datetime.now().date().strftime('%d.%m.%Y')):
         if isinstance(amount, int):
             self.amount = amount
