@@ -44,7 +44,13 @@ class Calculator:
     get_today_stats(date_counting=datetime.now().date())
         Возвращает количество расчетной величины за день
     get_week_stats(date_counting=datetime.now().date())
-        Возвращает количество расчетной величины за неделю."""
+        Возвращает количество расчетной величины за неделю.
+    get_remained()
+        Возвращает остаток расчетной величины на сегодня.
+    get_responce_remain(more_limit, zero_limit, less_limit)
+        Возвращает текстовое сообщение об остатке расчетной величины
+        """
+    FORMAT_DATE = '%d.%m.%Y'
 
     def __init__(self, limit: int) -> None:
         if isinstance(limit, int):
@@ -65,7 +71,7 @@ class Calculator:
         else:
             raise ValueError('Для внесения записи воспользуйтесь объектом Record')
 
-    def get_today_stats(self, date_counting: str = '') -> int:
+    def get_today_stats(self, date_counting: str = None) -> int:
         """Возвращает количество расчетной величины за день.
         Если параметр date_counting не задан, то возвращает количество
         расчетной величины за сегодня.
@@ -74,16 +80,16 @@ class Calculator:
         ----------
         date_counting : datetime.date(), optional
         """
-        if not date_counting:
+        if date_counting is None:
             date_counting = datetime.now()
         else:
             try:
-                date_counting = datetime.strptime(date_counting, '%d.%m.%Y')
+                date_counting = datetime.strptime(date_counting, self.FORMAT_DATE)
             except ValueError:
                 raise ValueError('Неверный формат даты. Введите ДД.ММ.ГГ')
         return sum(rec_day.amount for rec_day in self.records if rec_day.date.date() == date_counting.date())
 
-    def get_week_stats(self, date_counting: str = '') -> int:
+    def get_week_stats(self, date_counting: str = None) -> int:
         """Возвращает количество расчетной величины за неделю.
         Если параметр date_counting не задан, то возвращает количество
         расчетной величины за сегодня и 7 дней до.
@@ -92,14 +98,14 @@ class Calculator:
         ----------
         date_counting : str, optional
         """
-        if not date_counting:
+        if date_counting is None:
             date_counting = datetime.now()
         else:
             try:
-                date_counting = datetime.strptime(date_counting, '%d.%m.%Y')
+                date_counting = datetime.strptime(date_counting, self.FORMAT_DATE)
             except ValueError:
                 raise ValueError('Неверный формат даты. Введите ДД.ММ.ГГ')
-        return sum(self.get_today_stats((date_counting - timedelta(days=i)).strftime('%d.%m.%Y')) for i in range(0, 7))
+        return sum(self.get_today_stats((date_counting - timedelta(days=i)).strftime(self.FORMAT_DATE)) for i in range(0, 7))
 
     def get_remained(self) -> int:
         """Возвращает остаток расчетной величины на сегодня."""
@@ -111,11 +117,11 @@ class Calculator:
         Parameters
         ----------
         more_limit : str
-            ответ при расходах/потреблениях привышающих лимит;
+            ответ при расходах/потреблениях превышающих лимит;
         zero_limit : str
             ответ при нулевом остатке;
         less_limit : str
-            ответ при расходах/потреблениях непривышающих лимит.
+            ответ при расходах/потреблениях не превышающих лимит.
         """
         if self.get_today_stats() < self.limit:
             return less_limit
