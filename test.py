@@ -17,11 +17,11 @@ class TestCaloriesCalculator(unittest.TestCase):
 
     def test_today_stats(self):
         self.assertEqual(self.calories_cal.get_today_stats(), 220)
-        self.assertEqual(self.calories_cal.get_today_stats(datetime(2021, 8, 22)), 2420)
+        self.assertEqual(self.calories_cal.get_today_stats('22.08.2021'), 2420)
 
     def test_week_stats(self):
         self.assertEqual(self.calories_cal.get_week_stats(), 540)
-        self.assertEqual(self.calories_cal.get_week_stats(datetime(2021, 8, 28)), 2740)
+        self.assertEqual(self.calories_cal.get_week_stats('28.08.2021'), 2740)
 
 
     def test_get_calories_remained(self):
@@ -44,11 +44,11 @@ class TestCashCalculator(unittest.TestCase):
 
     def test_today_stats(self):
         self.assertEqual(self.calories_cash.get_today_stats(), 220)
-        self.assertEqual(self.calories_cash.get_today_stats(datetime(2021, 8, 22)), 2420)
+        self.assertEqual(self.calories_cash.get_today_stats('22.08.2021'), 2420)
 
     def test_week_stats(self):
         self.assertEqual(self.calories_cash.get_week_stats(), 540)
-        self.assertEqual(self.calories_cash.get_week_stats(datetime(2021, 8, 28)), 2740)
+        self.assertEqual(self.calories_cash.get_week_stats('28.08.2021'), 2740)
 
     def test_get_calories_remained(self):
         self.assertEqual(self.calories_cash.get_today_cash_remained('РУб'),
